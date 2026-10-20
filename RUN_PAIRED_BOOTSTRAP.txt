@@ -1,0 +1,19 @@
+Run this after the baseline and UQ subset experiments have both completed.
+
+cd /home/cse1000/PycharmProjects/PythonProject2/davis_subset_experiment
+
+python paired_bootstrap_ensemble.py \
+  --uq-dir results_subset_uq \
+  --baseline-dir results_subset_baseline \
+  --out-dir subset_bootstrap_comparison \
+  --repetitions 10000 \
+  --seed 20260915
+
+The output file is:
+  subset_bootstrap_comparison/paired_bootstrap_report.json
+
+Interpretation:
+  Negative "observed_uq_minus_baseline" means the UQ ensemble has lower error.
+  A 95% CI that stays below zero supports an improvement.
+  The drug- and target-cluster bootstrap results are the conservative results to
+  emphasize in a paper, because DTA examples share drugs and proteins.

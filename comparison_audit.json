@@ -1,0 +1,287 @@
+{
+  "n_pairs": 4633,
+  "manifest_differences": {
+    "config": {
+      "min_variance": [
+        null,
+        0.0001
+      ],
+      "out_dir": [
+        "/home/cse1000/PycharmProjects/PythonProject2/results_davis_hgta",
+        "results_uq_hgta_full"
+      ],
+      "use_replicate_uncertainty": [
+        null,
+        false
+      ]
+    },
+    "environment": {},
+    "sha256": {}
+  },
+  "manifests": [
+    {
+      "config": {
+        "train_csv": "/home/cse1000/Downloads/HGTA/data/davis_train.csv",
+        "test_csv": "/home/cse1000/Downloads/HGTA/data/davis_test.csv",
+        "out_dir": "/home/cse1000/PycharmProjects/PythonProject2/results_davis_hgta",
+        "protein_model": "facebook/esm2_t12_35M_UR50D",
+        "seeds": [
+          4221,
+          17,
+          71,
+          314,
+          2025
+        ],
+        "val_fraction": 0.1,
+        "val_split": "pair",
+        "batch_size": 16,
+        "epochs": 300,
+        "patience": 35,
+        "learning_rate": 0.0002,
+        "weight_decay": 1e-05,
+        "dropout": 0.2,
+        "grad_clip": 1.0,
+        "num_workers": 0,
+        "hidden_dim": 256,
+        "gnn_layers": 3,
+        "attention_heads": 8,
+        "attention_blocks": 2,
+        "max_protein_tokens": 512,
+        "esm_chunk_residues": 1022,
+        "cache_dtype": "float16",
+        "use_amp": true,
+        "deterministic": true
+      },
+      "audit_before_exclusion": {
+        "train_rows": 21717,
+        "test_rows": 4633,
+        "shared_drugs": 68,
+        "shared_targets": 379,
+        "duplicate_pairs_across_train_test": 595
+      },
+      "audit_after_exclusion": {
+        "train_rows": 21122,
+        "test_rows": 4633,
+        "shared_drugs": 68,
+        "shared_targets": 379,
+        "duplicate_pairs_across_train_test": 0
+      },
+      "actual_train_rows": 19010,
+      "actual_val_rows": 2112,
+      "sha256": {
+        "train_csv": "3ebec645cadd267056e3adb52b658d43bd8a0fd664eb23fdb4a2481760b8f7d1",
+        "test_csv": "150a1148dba6d2ae3f197f4eea63aec00fbffa6198b07420db5cc20a0974f4bc"
+      },
+      "environment": {
+        "python": "3.8.20 (default, Oct  3 2024, 15:24:27) \n[GCC 11.2.0]",
+        "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.17",
+        "torch": "2.4.1",
+        "cuda": "11.8",
+        "rdkit": "2024.03.5",
+        "transformers": "4.46.3",
+        "device": "cuda"
+      },
+      "created_unix": 1788764417.3688338
+    },
+    {
+      "config": {
+        "train_csv": "/home/cse1000/Downloads/HGTA/data/davis_train.csv",
+        "test_csv": "/home/cse1000/Downloads/HGTA/data/davis_test.csv",
+        "out_dir": "results_uq_hgta_full",
+        "protein_model": "facebook/esm2_t12_35M_UR50D",
+        "seeds": [
+          4221,
+          17,
+          71,
+          314,
+          2025
+        ],
+        "val_fraction": 0.1,
+        "val_split": "pair",
+        "batch_size": 16,
+        "epochs": 300,
+        "patience": 35,
+        "learning_rate": 0.0002,
+        "weight_decay": 1e-05,
+        "dropout": 0.2,
+        "grad_clip": 1.0,
+        "num_workers": 0,
+        "hidden_dim": 256,
+        "gnn_layers": 3,
+        "attention_heads": 8,
+        "attention_blocks": 2,
+        "max_protein_tokens": 512,
+        "esm_chunk_residues": 1022,
+        "cache_dtype": "float16",
+        "use_amp": true,
+        "deterministic": true,
+        "use_replicate_uncertainty": false,
+        "min_variance": 0.0001
+      },
+      "audit_before_exclusion": {
+        "train_rows": 21717,
+        "test_rows": 4633,
+        "shared_drugs": 68,
+        "shared_targets": 379,
+        "duplicate_pairs_across_train_test": 595
+      },
+      "audit_after_exclusion": {
+        "train_rows": 21122,
+        "test_rows": 4633,
+        "shared_drugs": 68,
+        "shared_targets": 379,
+        "duplicate_pairs_across_train_test": 0
+      },
+      "actual_train_rows": 19010,
+      "actual_val_rows": 2112,
+      "sha256": {
+        "train_csv": "3ebec645cadd267056e3adb52b658d43bd8a0fd664eb23fdb4a2481760b8f7d1",
+        "test_csv": "150a1148dba6d2ae3f197f4eea63aec00fbffa6198b07420db5cc20a0974f4bc"
+      },
+      "environment": {
+        "python": "3.8.20 (default, Oct  3 2024, 15:24:27) \n[GCC 11.2.0]",
+        "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.17",
+        "torch": "2.4.1",
+        "cuda": "11.8",
+        "rdkit": "2024.03.5",
+        "transformers": "4.46.3",
+        "device": "cuda"
+      },
+      "created_unix": 1788856330.5201266
+    }
+  ],
+  "excluded_pair_sets_equal": true,
+  "checkpoints": {
+    "results_davis_hgta": [
+      {
+        "seed": 4221,
+        "best_epoch": 48,
+        "validation_mse": 0.42210648574097165,
+        "test_mse": 0.5545189484278089
+      },
+      {
+        "seed": 17,
+        "best_epoch": 63,
+        "validation_mse": 0.3692170740487604,
+        "test_mse": 0.47510446284775565
+      },
+      {
+        "seed": 71,
+        "best_epoch": 93,
+        "validation_mse": 0.317858344220315,
+        "test_mse": 0.42491568011008346
+      },
+      {
+        "seed": 314,
+        "best_epoch": 114,
+        "validation_mse": 0.38157106564979804,
+        "test_mse": 0.49223005150917765
+      },
+      {
+        "seed": 2025,
+        "best_epoch": 11,
+        "validation_mse": 0.45312081248915587,
+        "test_mse": 0.5566694260453698
+      }
+    ],
+    "results_uq_hgta_full": [
+      {
+        "seed": 4221,
+        "best_epoch": 50,
+        "validation_mse": 0.45353111635244336,
+        "test_mse": 0.5818383419861342
+      },
+      {
+        "seed": 17,
+        "best_epoch": 79,
+        "validation_mse": 0.32670328872412246,
+        "test_mse": 0.44919318136538944
+      },
+      {
+        "seed": 71,
+        "best_epoch": 28,
+        "validation_mse": 0.4375418740262574,
+        "test_mse": 0.5558316714585285
+      },
+      {
+        "seed": 314,
+        "best_epoch": 107,
+        "validation_mse": 0.3491895001898082,
+        "test_mse": 0.44165608516611005
+      },
+      {
+        "seed": 2025,
+        "best_epoch": 81,
+        "validation_mse": 0.3527721456849623,
+        "test_mse": 0.4731298732790652
+      }
+    ]
+  },
+  "bootstrap": {
+    "pairs": {
+      "n_groups": 4633,
+      "replicates": 10000,
+      "difference_UQ_minus_baseline": {
+        "MSE": -0.032508304228479494,
+        "MAE": -0.03204596644506794
+      },
+      "percentile_95_CI": {
+        "MSE": [
+          -0.0451319022226221,
+          -0.020119235630451416
+        ],
+        "MAE": [
+          -0.03773561620580612,
+          -0.026330215900496452
+        ]
+      }
+    },
+    "drug_clusters": {
+      "n_groups": 68,
+      "replicates": 10000,
+      "difference_UQ_minus_baseline": {
+        "MSE": -0.032508304228479494,
+        "MAE": -0.03204596644506794
+      },
+      "percentile_95_CI": {
+        "MSE": [
+          -0.05872198192360239,
+          -0.009241052139737995
+        ],
+        "MAE": [
+          -0.04573914604195328,
+          -0.0178863826034203
+        ]
+      }
+    },
+    "target_clusters": {
+      "n_groups": 379,
+      "replicates": 10000,
+      "difference_UQ_minus_baseline": {
+        "MSE": -0.032508304228479494,
+        "MAE": -0.03204596644506794
+      },
+      "percentile_95_CI": {
+        "MSE": [
+          -0.046412508871590694,
+          -0.01820350053169542
+        ],
+        "MAE": [
+          -0.03983985702507201,
+          -0.02404207896015486
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "baseline": {
+      "MSE": 0.44924067763667297,
+      "MAE": 0.41458929386207644
+    },
+    "uq": {
+      "MSE": 0.4167323734081935,
+      "MAE": 0.3825433274170084
+    }
+  },
+  "limits": "Fixed trained ensembles; drug and target cluster bootstraps run separately, not joint two-way resampling. No retraining or model-selection uncertainty included. Exact training/validation membership not archived."
+}

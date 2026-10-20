@@ -1,0 +1,20 @@
+1. Obtain kiba_train.csv and kiba_test.csv from the fixed GraphDTA/DeepDTA
+   fold-setting-1 source. Do not use the old .pt files: they omit identifiers.
+
+2. In /home/cse1000/PycharmProjects/PythonProject2/davis_subset_experiment,
+   copy prepare_kiba_locked_split.py and run_kiba_subset.py, then run:
+
+python prepare_kiba_locked_split.py \
+  --train-csv /path/to/kiba_train.csv \
+  --test-csv /path/to/kiba_test.csv \
+  --out-dir kiba_locked_v1 \
+  --val-fraction 0.15 \
+  --seed 20260915
+
+3. Only if it completes without conflicting labels, run the matched models:
+
+python run_kiba_subset.py --model baseline --data-dir kiba_locked_v1 --out-dir results_kiba_baseline --seeds 4221 17 71 314 2025 --epochs 300 --patience 35
+python run_kiba_subset.py --model uq --data-dir kiba_locked_v1 --out-dir results_kiba_uq --seeds 4221 17 71 314 2025 --epochs 300 --patience 35
+
+4. Reuse ensemble_hgta.py and paired_bootstrap_ensemble_v2.py with the two
+   KIBA results directories. Keep all settings unchanged from Davis.

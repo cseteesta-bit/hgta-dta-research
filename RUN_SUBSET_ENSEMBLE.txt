@@ -1,0 +1,6 @@
+Extract ensemble_hgta.py into the same directory as results_subset_uq and
+results_subset_baseline, then run:
+
+python ensemble_hgta.py --results-dir results_subset_uq --baseline-dir results_subset_baseline --out-dir subset_ensemble_comparison
+
+The output directory must not already exist.

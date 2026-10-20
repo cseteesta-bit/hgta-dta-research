@@ -1,0 +1,30 @@
+# Python and editor artefacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.idea/
+.vscode/
+
+# Raw/derived datasets and embedding caches
+*.csv
+*.pt
+*.pth
+*.ckpt
+protein_cache/
+official_esm2_cache/
+davis_unambiguous_v1/
+kiba_*/
+davis_*/
+
+# Training and evaluation outputs (recreate from the documented commands)
+results_*/
+smoke_*/
+dev_*/
+*_ensemble/
+*_comparison/
+*_bootstrap/
+audit_*/
+report_render/
+
+# Packaged copies; source files remain versioned
+*.zip
