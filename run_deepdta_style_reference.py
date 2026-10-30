@@ -39,6 +39,8 @@ def args_parser():
     p.add_argument("--max-drug-length", type=int, default=100)
     p.add_argument("--max-protein-length", type=int, default=1000)
     p.add_argument("--cuda", type=int, default=0)
+    p.add_argument("--finalize-only", action="store_true",
+                   help="Write metrics from an existing best.pt without retraining.")
     return p.parse_args()
 
 
@@ -149,10 +151,11 @@ def predict(model, loader, device):
 def main():
     a = args_parser()
     if not 0 < a.val_fraction < .5: raise ValueError("--val-fraction must be between 0 and 0.5")
-    if a.out_dir.exists(): raise ValueError(f"Output already exists: {a.out_dir}")
+    if a.out_dir.exists() and not a.finalize_only:
+        raise ValueError(f"Output already exists: {a.out_dir}")
     train_csv, test_csv = Path("data") / f"{a.dataset}_train.csv", Path("data") / f"{a.dataset}_test.csv"
     if not train_csv.exists() or not test_csv.exists(): raise FileNotFoundError("Expected data/<dataset>_train.csv and data/<dataset>_test.csv")
-    a.out_dir.mkdir(parents=True); seed_all(a.seed)
+    a.out_dir.mkdir(parents=True, exist_ok=True); seed_all(a.seed)
     device = torch.device(f"cuda:{a.cuda}" if torch.cuda.is_available() else "cpu")
     train_all = SequenceDataset(pd.read_csv(train_csv), a.max_drug_length, a.max_protein_length)
     test_set = SequenceDataset(pd.read_csv(test_csv), a.max_drug_length, a.max_protein_length)
@@ -161,28 +164,32 @@ def main():
     fit_loader = DataLoader(fit, a.batch_size, shuffle=True)
     val_loader = DataLoader(validation, a.batch_size); test_loader = DataLoader(test_set, a.batch_size)
     model = DeepDTAStyle(a.dropout).to(device); optimizer = torch.optim.Adam(model.parameters(), lr=a.learning_rate)
-    best, best_epoch, stale, history = float("inf"), -1, 0, []
-    for epoch in range(1, a.epochs+1):
-        model.train(); total = count = 0
-        for drug, protein, y in fit_loader:
-            optimizer.zero_grad(set_to_none=True); prediction = model(drug.to(device), protein.to(device)); loss = nn.functional.mse_loss(prediction, y.to(device))
-            loss.backward(); optimizer.step(); total += loss.item()*len(y); count += len(y)
-        vy, vp = predict(model, val_loader, device); val_mse = float(np.mean((vy-vp)**2))
-        history.append({"epoch": epoch, "train_mse": total/count, "validation_mse": val_mse})
-        if val_mse < best:
-            best, best_epoch, stale = val_mse, epoch, 0
-            torch.save({"model": model.state_dict(), "epoch": epoch, "validation_mse": val_mse}, a.out_dir/"best.pt")
-        else: stale += 1
-        if epoch == 1 or epoch % 10 == 0: print(f"seed={a.seed} epoch={epoch} train_mse={total/count:.4f} val_mse={val_mse:.4f}")
-        if stale >= a.patience: break
-    pd.DataFrame(history).to_csv(a.out_dir/"history.csv", index=False)
+    if not a.finalize_only:
+        best, stale, history = float("inf"), 0, []
+        for epoch in range(1, a.epochs+1):
+            model.train(); total = count = 0
+            for drug, protein, y in fit_loader:
+                optimizer.zero_grad(set_to_none=True); prediction = model(drug.to(device), protein.to(device)); loss = nn.functional.mse_loss(prediction, y.to(device))
+                loss.backward(); optimizer.step(); total += loss.item()*len(y); count += len(y)
+            vy, vp = predict(model, val_loader, device); val_mse = float(np.mean((vy-vp)**2))
+            history.append({"epoch": epoch, "train_mse": total/count, "validation_mse": val_mse})
+            if val_mse < best:
+                best, stale = val_mse, 0
+                torch.save({"model": model.state_dict(), "epoch": epoch, "validation_mse": val_mse}, a.out_dir/"best.pt")
+            else: stale += 1
+            if epoch == 1 or epoch % 10 == 0: print(f"seed={a.seed} epoch={epoch} train_mse={total/count:.4f} val_mse={val_mse:.4f}")
+            if stale >= a.patience: break
+        pd.DataFrame(history).to_csv(a.out_dir/"history.csv", index=False)
+    elif not (a.out_dir / "best.pt").exists():
+        raise FileNotFoundError(f"Cannot finalize: missing {a.out_dir / 'best.pt'}")
     checkpoint = torch.load(a.out_dir/"best.pt", map_location=device, weights_only=True); model.load_state_dict(checkpoint["model"])
     y, p = predict(model, test_loader, device)
     np.savetxt(a.out_dir/"test_predictions.csv", np.column_stack((y, p)), delimiter=",", header="y_true,y_pred", comments="")
     report = {"protocol": "DeepDTA_style_validation_selected_clean_v1", "dataset": a.dataset, "seed": a.seed,
               "best_epoch": checkpoint["epoch"], "validation_mse": checkpoint["validation_mse"], "test": metrics(y, p),
               "fit_rows": n_fit, "validation_rows": n_val, "test_rows": len(test_set), "device": str(device),
-              "csv_sha256": {"train": sha256(train_csv), "test": sha256(test_csv)}, "args": vars(a)}
+              "csv_sha256": {"train": sha256(train_csv), "test": sha256(test_csv)},
+              "args": {key: str(value) if isinstance(value, Path) else value for key, value in vars(a).items()}}
     (a.out_dir/"metrics.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report, indent=2)); print(f"Saved: {a.out_dir.resolve()}")
 
