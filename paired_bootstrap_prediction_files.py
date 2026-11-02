@@ -25,7 +25,12 @@ def summarize(samples, observed):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--predictions", type=Path, required=True)
+    ap.add_argument("--predictions", type=Path,
+                    help="One CSV containing truth, candidate, and base columns.")
+    ap.add_argument("--candidate-predictions", type=Path,
+                    help="Optional separate candidate CSV with y_true and ensemble_prediction.")
+    ap.add_argument("--base-predictions", type=Path,
+                    help="Optional separate base CSV with y_true and ensemble_prediction.")
     ap.add_argument("--candidate-column", default="hgta_v2_prediction")
     ap.add_argument("--base-column", default="frozen_base_prediction")
     ap.add_argument("--truth-column", default="y_true")
@@ -36,14 +41,33 @@ def main():
     if args.repetitions < 1000:
         raise ValueError("Use at least 1,000 bootstrap repetitions")
 
-    frame = pd.read_csv(args.predictions)
-    required = {args.truth_column, args.candidate_column, args.base_column}
-    missing = required - set(frame.columns)
-    if missing:
-        raise ValueError(f"Missing columns {sorted(missing)} in {args.predictions}")
-    y = frame[args.truth_column].to_numpy(float)
-    candidate = frame[args.candidate_column].to_numpy(float)
-    base = frame[args.base_column].to_numpy(float)
+    if bool(args.candidate_predictions) != bool(args.base_predictions):
+        raise ValueError("Provide both --candidate-predictions and --base-predictions, or neither")
+    if not args.candidate_predictions and not args.predictions:
+        raise ValueError("Provide --predictions or both separate prediction files")
+    if args.candidate_predictions:
+        candidate_frame = pd.read_csv(args.candidate_predictions)
+        base_frame = pd.read_csv(args.base_predictions)
+        required = {args.truth_column, "ensemble_prediction"}
+        if required - set(candidate_frame) or required - set(base_frame):
+            raise ValueError("Separate prediction files must contain y_true and ensemble_prediction")
+        y = candidate_frame[args.truth_column].to_numpy(float)
+        candidate = candidate_frame["ensemble_prediction"].to_numpy(float)
+        base_y = base_frame[args.truth_column].to_numpy(float)
+        base = base_frame["ensemble_prediction"].to_numpy(float)
+        if len(y) != len(base_y) or not np.array_equal(y, base_y):
+            raise ValueError("Candidate and base files do not contain the same ordered test labels")
+        source = {"candidate": str(args.candidate_predictions), "base": str(args.base_predictions)}
+    else:
+        frame = pd.read_csv(args.predictions)
+        required = {args.truth_column, args.candidate_column, args.base_column}
+        missing = required - set(frame.columns)
+        if missing:
+            raise ValueError(f"Missing columns {sorted(missing)} in {args.predictions}")
+        y = frame[args.truth_column].to_numpy(float)
+        candidate = frame[args.candidate_column].to_numpy(float)
+        base = frame[args.base_column].to_numpy(float)
+        source = {"predictions": str(args.predictions)}
     if not (np.isfinite(y).all() and np.isfinite(candidate).all() and np.isfinite(base).all()):
         raise ValueError("Predictions and labels must be finite")
 
@@ -59,7 +83,7 @@ def main():
         mae_samples[i] = absolute_delta[index].mean()
 
     report = {
-        "predictions": str(args.predictions),
+        **source,
         "n_pairs": int(n),
         "repetitions": args.repetitions,
         "rng_seed": args.seed,
