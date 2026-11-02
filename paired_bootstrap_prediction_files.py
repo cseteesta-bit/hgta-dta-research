@@ -31,6 +31,8 @@ def main():
                     help="Optional separate candidate CSV with y_true and ensemble_prediction.")
     ap.add_argument("--base-predictions", type=Path,
                     help="Optional separate base CSV with y_true and ensemble_prediction.")
+    ap.add_argument("--candidate-source-column", default="ensemble_prediction")
+    ap.add_argument("--base-source-column", default="ensemble_prediction")
     ap.add_argument("--candidate-column", default="hgta_v2_prediction")
     ap.add_argument("--base-column", default="frozen_base_prediction")
     ap.add_argument("--truth-column", default="y_true")
@@ -48,13 +50,14 @@ def main():
     if args.candidate_predictions:
         candidate_frame = pd.read_csv(args.candidate_predictions)
         base_frame = pd.read_csv(args.base_predictions)
-        required = {args.truth_column, "ensemble_prediction"}
-        if required - set(candidate_frame) or required - set(base_frame):
-            raise ValueError("Separate prediction files must contain y_true and ensemble_prediction")
+        required_candidate = {args.truth_column, args.candidate_source_column}
+        required_base = {args.truth_column, args.base_source_column}
+        if required_candidate - set(candidate_frame) or required_base - set(base_frame):
+            raise ValueError("Separate prediction files do not contain the requested truth/prediction columns")
         y = candidate_frame[args.truth_column].to_numpy(float)
-        candidate = candidate_frame["ensemble_prediction"].to_numpy(float)
+        candidate = candidate_frame[args.candidate_source_column].to_numpy(float)
         base_y = base_frame[args.truth_column].to_numpy(float)
-        base = base_frame["ensemble_prediction"].to_numpy(float)
+        base = base_frame[args.base_source_column].to_numpy(float)
         if len(y) != len(base_y) or not np.array_equal(y, base_y):
             raise ValueError("Candidate and base files do not contain the same ordered test labels")
         source = {"candidate": str(args.candidate_predictions), "base": str(args.base_predictions)}
